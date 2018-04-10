@@ -1,0 +1,37 @@
+version: 1.0.{build}
+
+configuration: Release
+
+os: Visual Studio 2017
+
+branches:
+  only:
+    - master
+    - csproj_migration
+
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  TARGET_BUILD_VERSION: '1.4.9.4'
+
+nuget:
+  disable_publish_on_pr: true
+
+before_build:
+- dotnet --info
+- dotnet restore .\src\Crpsem.HtmlAgilityPack.sln
+
+after_build:
+  - dotnet pack .\src\Crpsem.HtmlAgilityPack --configuration Release /p:Version=%TARGET_BUILD_VERSION%
+
+test_script:
+  - dotnet test .\src\Crpsem.HtmlAgilityPack.Tests\Crpsem.HtmlAgilityPack.Tests.csproj --configuration Release
+
+artifacts:
+  - path: '**\Crpsem.HtmlAgilityPack.*.nupkg'
+
+deploy:
+- provider: NuGet
+  api_key:
+    secure: 1XMgADnmiLunXwBT7K0CMDcHyoC5tUFE4Cf+X7VkuzoRZiWnIL2P9mP7oPEtGPHg
+  skip_symbols: true
